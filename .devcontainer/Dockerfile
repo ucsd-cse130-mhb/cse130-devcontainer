@@ -49,4 +49,4 @@ RUN ghcup install ghc "${GHC_VERSION}" --set \
     && cabal update
 
 RUN stack config set system-ghc --global true
-RUN stack install --resolver=lts-19.20 haskell-dap ghci-dap haskell-debug-adapter
+RUN stack install --resolver=lts-20.7 haskell-dap ghci-dap haskell-debug-adapter
