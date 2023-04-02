@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bullseye-slim AS haskell-env
 
 ENV LANG C.UTF-8
 
@@ -51,9 +51,12 @@ RUN ghcup install ghc "${GHC_VERSION}" --set \
 RUN stack config set system-ghc --global true
 RUN stack install --resolver=lts-20.16 haskell-dap ghci-dap haskell-debug-adapter
 
-# Install Elsa and clean up afterwards
-RUN cd ~ && git clone https://github.com/ucsd-progsys/elsa.git
-RUN cd ~/elsa && stack install
-ENV PATH="/home/$USERNAME/.local/bin:$PATH"
-RUN yes | rm -r ~/elsa
-RUN rm -r ~/.stack/programs/x86_64-linux/ghc-tinfo6-8.10.7*
+# Install Elsa in separate container, so that no artifacts remain
+FROM haskell-env AS elsa-build
+WORKDIR workdir
+RUN git clone https://github.com/ucsd-progsys/elsa.git elsa-repo
+RUN cd elsa-repo && stack install --local-bin-path /workdir
+
+# Copy *just* the elsa binary into our final container
+FROM haskell-env AS final-img
+COPY --from=elsa-build /workdir/elsa /usr/bin/elsa
