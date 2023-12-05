@@ -26,6 +26,7 @@ RUN apt-get update \
         libnuma-dev \
         libtinfo-dev \
         zlib1g-dev \
+        z3 \
     && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Install latest GHCup in the non-root user home
@@ -37,7 +38,7 @@ RUN mkdir -p "$HOME/.ghcup/bin" \
 ENV PATH="/home/$USERNAME/.cabal/bin:/home/$USERNAME/.ghcup/bin:$PATH"
 
 # [Choice] GHC version: recommended, latest, 9.2, 9.0, 8.10, 8.8, 8.6
-ARG GHC_VERSION=9.2.7
+ARG GHC_VERSION=9.4.8
 
 # Use GHCup to install versions of main utilities
 # If you prefer to let the Haskell extension install everything on demand,
@@ -49,7 +50,7 @@ RUN ghcup install ghc "${GHC_VERSION}" --set \
     && cabal update
 
 RUN stack config set system-ghc --global true
-RUN stack install --resolver=lts-20.16 haskell-dap ghci-dap haskell-debug-adapter
+RUN stack install --resolver=lts-21.23 haskell-dap ghci-dap haskell-debug-adapter
 
 # Install Elsa in separate container, so that no artifacts remain
 FROM haskell-env AS elsa-build
