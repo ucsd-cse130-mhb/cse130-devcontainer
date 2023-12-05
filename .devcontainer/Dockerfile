@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bullseye-slim AS haskell-env
 
 ENV LANG C.UTF-8
 
@@ -37,7 +37,7 @@ RUN mkdir -p "$HOME/.ghcup/bin" \
 ENV PATH="/home/$USERNAME/.cabal/bin:/home/$USERNAME/.ghcup/bin:$PATH"
 
 # [Choice] GHC version: recommended, latest, 9.2, 9.0, 8.10, 8.8, 8.6
-ARG GHC_VERSION=9.2.5
+ARG GHC_VERSION=9.2.7
 
 # Use GHCup to install versions of main utilities
 # If you prefer to let the Haskell extension install everything on demand,
@@ -49,4 +49,14 @@ RUN ghcup install ghc "${GHC_VERSION}" --set \
     && cabal update
 
 RUN stack config set system-ghc --global true
-RUN stack install --resolver=lts-20.7 haskell-dap ghci-dap haskell-debug-adapter
+RUN stack install --resolver=lts-20.16 haskell-dap ghci-dap haskell-debug-adapter
+
+# Install Elsa in separate container, so that no artifacts remain
+FROM haskell-env AS elsa-build
+WORKDIR workdir
+RUN git clone https://github.com/ucsd-progsys/elsa.git elsa-repo
+RUN cd elsa-repo && stack install --local-bin-path /workdir
+
+# Copy *just* the elsa binary into our final container
+FROM haskell-env AS final-img
+COPY --from=elsa-build /workdir/elsa /usr/bin/elsa

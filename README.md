@@ -1,5 +1,10 @@
 # CSE 130 Dev Container
 
+You can find the container at <https://github.com/orgs/cse130-assignments/packages/container/package/cse130-devcontainer>.
+
+See the [wiki](https://github.com/cse130-assignments/cse130-devcontainer/wiki/Updating-the-Devcontainer) for
+instructions on how to update this container.
+
 A repository for a VS Code Development Container for implementing 
 CSE 130 programming assignments. For some general info on making 
 your own devcontainers see here: 
