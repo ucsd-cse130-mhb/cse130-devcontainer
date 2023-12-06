@@ -26,6 +26,7 @@ RUN apt-get update \
         libnuma-dev \
         libtinfo-dev \
         zlib1g-dev \
+        build-essential \
         z3 \
     && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
@@ -51,13 +52,3 @@ RUN ghcup install ghc "${GHC_VERSION}" --set \
 
 RUN stack config set system-ghc --global true
 RUN stack install --resolver=lts-21.23 haskell-dap ghci-dap haskell-debug-adapter
-
-# Install Elsa in separate container, so that no artifacts remain
-FROM haskell-env AS elsa-build
-WORKDIR workdir
-RUN git clone https://github.com/ucsd-progsys/elsa.git elsa-repo
-RUN cd elsa-repo && stack install --local-bin-path /workdir
-
-# Copy *just* the elsa binary into our final container
-FROM haskell-env AS final-img
-COPY --from=elsa-build /workdir/elsa /usr/bin/elsa
